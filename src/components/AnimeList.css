@@ -1,0 +1,19 @@
+.anime-list-container {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+.anime-list-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.anime-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.anime-list-container::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+}

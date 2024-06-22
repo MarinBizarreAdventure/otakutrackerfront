@@ -1,16 +1,13 @@
-import React, {useState, useTransition} from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardMedia, CardContent, Typography, Rating, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
 import { styled } from '@mui/system';
 import {useTranslation} from "react-i18next";
 
 const StyledCard = styled(Card)(({ theme }) => ({
+    width: '100%',
     margin: 5,
-    marginTop: 9,
-    height: '100%',
     display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
     transition: 'transform 0.2s, box-shadow 0.2s',
     '&:hover': {
         transform: 'translateY(-8px)',
@@ -19,7 +16,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
     cursor: 'pointer',
 }));
 
-const AnimeCard = ({ animeId, image, title, rating }) => {
+const AnimeGalleryCard = ({ animeId, image, title, rating, description, year }) => {
     const [open, setOpen] = useState(false);
     const [status, setStatus] = useState('');
     const [startDate, setStartDate] = useState('');
@@ -35,8 +32,6 @@ const AnimeCard = ({ animeId, image, title, rating }) => {
     };
 
     const handleAdd = () => {
-        // TODO
-        // Logic here
         console.log('Adding anime to favorites:', animeId);
         console.log('Status:', status);
         console.log('Start Date:', startDate);
@@ -45,28 +40,33 @@ const AnimeCard = ({ animeId, image, title, rating }) => {
     };
 
     return (
-        <Box sx={{ position: 'relative', marginBottom: 3 }}>
+        <Box sx={{ position: 'relative' }}>
             <StyledCard>
-                <Link to={`/anime/${animeId}`} style={{ textDecoration: 'none', height: 'calc(100% - 40px)', display: 'block' }}>
-                <Box sx={{ position: 'relative', flexGrow: 1 }}>
+                <Box sx={{ flex: '1 1 40%' }}>
                     <CardMedia
-                        sx={{ aspectRatio: '2/3' }}
+                        sx={{ aspectRatio: '2/3', height: '100%' }}
                         component="img"
-                        height="100%"
                         image={image}
                         alt={title}
                     />
                 </Box>
-                <CardContent sx={{ paddingBottom: '1rem' }}>
-                    <Typography variant="h7" component="div" sx={{ minHeight: '3rem' }}>
-                        {title}
-                    </Typography>
-                    <Rating value={rating} readOnly sx={{ marginTop: 1, fontSize: '0.875rem' }}/>
-                </CardContent>
-                </Link>
-                <Button onClick={handleOpen} fullWidth sx={{ borderRadius: '0', backgroundColor: '#3f51b5', color: '#fff' }}>
-                    {i18n.t("Add")}
-                </Button>
+                <Box sx={{ flex: '1 1 60%', padding: 2 }}>
+                    <CardContent>
+                        <Typography variant="h6" component="div">
+                            {title}
+                        </Typography>
+                        <Rating value={rating} readOnly sx={{ marginY: 1, fontSize: '1rem' }}/>
+                        <Typography variant="body2" color="text.secondary">
+                            {description}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {i18n.t("Year")}: {year}
+                        </Typography>
+                    </CardContent>
+                    <Button onClick={handleOpen} fullWidth sx={{ marginTop: 'auto', backgroundColor: '#3f51b5', color: '#fff' }}>
+                        {i18n.t("Add")}
+                    </Button>
+                </Box>
             </StyledCard>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>{i18n.t("Add to Favorites")}</DialogTitle>
@@ -131,4 +131,4 @@ const AnimeCard = ({ animeId, image, title, rating }) => {
     );
 };
 
-export default AnimeCard;
+export default AnimeGalleryCard;

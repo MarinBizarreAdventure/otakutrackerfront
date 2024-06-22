@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import AnimeCard from './AnimeCard';
+import './AnimeList.css';
 
 const AnimeList = ({ title, animes }) => {
     return (
@@ -8,11 +9,11 @@ const AnimeList = ({ title, animes }) => {
             <Typography variant="h4" gutterBottom>
                 {title}
             </Typography>
-            <Box sx={{ display: 'flex', overflowX: 'scroll' }}>
+            <div className="anime-list-container">
                 {animes.map((anime, index) => (
-                    <AnimeCard key={index} image={anime.image} title={anime.title} rating={anime.rating} />
+                    <AnimeCard key={index} animeId={anime.animeId} image={anime.image} title={anime.title} rating={anime.rating} />
                 ))}
-            </Box>
+            </div>
         </Box>
     );
 };

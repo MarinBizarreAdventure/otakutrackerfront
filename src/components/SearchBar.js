@@ -3,13 +3,20 @@ import { TextField, Box } from '@mui/material';
 
 const SearchBar = () => {
     return (
-        <Box sx={{ margin: 4, display: 'flex', justifyContent: 'center' }}>
+        <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                maxWidth: '1000px',
+                margin: 'auto',
+            }}
+        >
             <TextField
                 id="outlined-search"
                 label="Search Anime"
                 type="search"
                 variant="outlined"
-                sx={{ width: '50%' }}
+                sx={{ width: '100%', margin: 2 }}
             />
         </Box>
     );

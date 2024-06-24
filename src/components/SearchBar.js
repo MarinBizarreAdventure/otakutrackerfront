@@ -16,7 +16,7 @@ const SearchBar = () => {
                 from: (page - 1) * 10,
                 size: 10
             };
-            const response = await axios.post('http://your-elasticsearch-url/search', requestBody);
+            const response = await axios.post('http://localhost:5107/search', requestBody);
 
             if (response.data.hits) {
                 setResults(response.data.hits.hits);

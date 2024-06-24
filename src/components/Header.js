@@ -2,9 +2,11 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, FormControl, Select, MenuItem } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 
 const Header = () => {
     const { t, i18n } = useTranslation();
+    const { username, logout } = useAuth();
 
     const changeLanguage = (event) => {
         i18n.changeLanguage(event.target.value);
@@ -28,12 +30,25 @@ const Header = () => {
                     </Button>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Button color="inherit" component={Link} to="/login" sx={{ marginLeft: 2 }}>
-                        {t('Login')}
-                    </Button>
-                    <Button color="inherit" component={Link} to="/signup">
-                        {t('Sign Up')}
-                    </Button>
+                    {username ? (
+                        <>
+                            <Typography variant="body1" sx={{ color: 'white', marginRight: 2 }}>
+                                {t('Hello')}, {username}
+                            </Typography>
+                            <Button color="inherit" onClick={logout} sx={{ marginLeft: 2 }}>
+                                {t('Logout')}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button color="inherit" component={Link} to="/login" sx={{ marginLeft: 2 }}>
+                                {t('Login')}
+                            </Button>
+                            <Button color="inherit" component={Link} to="/signup">
+                                {t('Sign Up')}
+                            </Button>
+                        </>
+                    )}
                     <FormControl sx={{ minWidth: 120 }}>
                         <Select
                             value={i18n.language}

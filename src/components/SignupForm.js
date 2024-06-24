@@ -17,7 +17,6 @@ const SignupForm = ({ handleSignup }) => {
     const validateForm = () => {
         let valid = true;
 
-        // Validate email
         if (!validator.isEmail(email)) {
             setEmailError('Please enter a valid email');
             valid = false;
@@ -25,7 +24,6 @@ const SignupForm = ({ handleSignup }) => {
             setEmailError('');
         }
 
-        // Validate password
         if (password.length < 6) {
             setPasswordError('Password must be at least 6 characters long');
             valid = false;
@@ -33,7 +31,6 @@ const SignupForm = ({ handleSignup }) => {
             setPasswordError('');
         }
 
-        // Validate repeat password
         if (password !== repeatPassword) {
             setRepeatPasswordError('Passwords do not match');
             valid = false;
@@ -60,8 +57,7 @@ const SignupForm = ({ handleSignup }) => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <Paper elevation={3} className="w-full max-w-md p-4 rounded-md bg-gray-900 text-white">
+            <Paper elevation={3} className="p-4 rounded-md bg-gray-900 text-white">
                 <Typography variant="h5" align="center" gutterBottom>
                     {i18n.t("Sign Up")}
                 </Typography>
@@ -150,7 +146,6 @@ const SignupForm = ({ handleSignup }) => {
                     </Grid>
                 </form>
             </Paper>
-        </div>
     );
 };
 

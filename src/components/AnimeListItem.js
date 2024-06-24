@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography, Button, MenuItem, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Select, FormControl, InputLabel } from '@mui/material';
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
+import axios from 'axios';
+import {useAnimeList} from "../contexts/AnimeContext";
+import {useAuth} from "../contexts/AuthContext";
+import {Link} from "react-router-dom";
 
 const statuses = [
     { id: 1, label: 'Currently Watching' },
@@ -12,12 +16,14 @@ const statuses = [
 ];
 
 const AnimeListItem = ({ anime, onReviewClick, onEditClick, onDeleteClick }) => {
-    const { id, title, status, startDate, endDate, review, image } = anime;
+    const { animeList, fetchAnimeList, addAnimeToList, editAnimeInList, deleteAnimeFromList } = useAnimeList();
+    const { animeId, title, imageUrl, watchingStatus, myStartDate, myFinishDate, myTags } = anime;
     const [editMode, setEditMode] = useState(false);
-    const [newStartDate, setNewStartDate] = useState(startDate);
-    const [newStatus, setNewStatus] = useState(status);
-    const [newEndDate, setNewEndDate] = useState(endDate || '');
+    const [newStartDate, setNewStartDate] = useState(myStartDate);
+    const [newStatus, setNewStatus] = useState(watchingStatus);
+    const [newEndDate, setNewEndDate] = useState(myFinishDate || '');
     const { i18n } = useTranslation();
+    const { username } = useAuth();
 
     const getStatusLabel = (statusId) => {
         const statusObj = statuses.find(status => status.id === statusId);
@@ -28,31 +34,47 @@ const AnimeListItem = ({ anime, onReviewClick, onEditClick, onDeleteClick }) => 
         setEditMode(true);
     };
 
-    const handleSaveEdit = () => {
-        // Save changes
-        console.log('Save edit for anime:', anime.title);
-        setEditMode(false);
-        // Send API request to update anime details (startDate, status, endDate)
+    const handleSaveEdit = async () => {
+        try {
+            const response = await axios.put(`http://localhost:5107/api/anime/${animeId}`, {
+                username: 'lumi',
+                animeId: animeId,
+                watchingStatus: newStatus,
+                myStartDate: newStartDate,
+                myFinishDate: newEndDate,
+                myTags: myTags
+            });
+            console.log('Save edit for anime:', anime.title);
+            setEditMode(false);
+        } catch (error) {
+            console.error('Error saving anime edit:', error);
+        }
     };
 
     const handleCancelEdit = () => {
-        setNewStartDate(startDate);
-        setNewStatus(status);
-        setNewEndDate(endDate || '');
+        setNewStartDate(myStartDate);
+        setNewStatus(watchingStatus);
+        setNewEndDate(myFinishDate || '');
         setEditMode(false);
     };
 
-    const handleDeleteClick = () => {
-        // Delete anime
-        console.log('Delete anime:', anime.title);
-        // Send API request to delete anime
+    const handleDeleteClick = async () => {
+        try {
+            await axios.delete(`http://localhost:5107/api/AnimeList/${username}/${animeId}`);
+            console.log('Delete anime:', anime.title);
+            onDeleteClick(animeId);
+        } catch (error) {
+            console.error('Error deleting anime:', error);
+        }
     };
 
     return (
         <Box sx={{ borderBottom: '1px solid #ccc', marginBottom: 2, paddingBottom: 2, display: 'flex', alignItems: 'center' }}>
-            <Box sx={{ marginRight: 2 }}>
-                <img src={image} alt={title} style={{ width: 100, height: 'auto' }} />
-            </Box>
+            <Link to={`/anime/${animeId}`} style={{ textDecoration: 'none' }}>
+                <Box sx={{ marginRight: 2 }}>
+                    <img src={imageUrl} alt={title} style={{ width: 100, height: 'auto' }} />
+                </Box>
+            </Link>
             <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="h6" gutterBottom>
                     {title}
@@ -60,9 +82,9 @@ const AnimeListItem = ({ anime, onReviewClick, onEditClick, onDeleteClick }) => 
                 {editMode ? (
                     <>
                         <FormControl fullWidth sx={{ marginBottom: 2 }}>
-                            <InputLabel id={`status-select-label-${id}`}>Status</InputLabel>
+                            <InputLabel id={`status-select-label-${animeId}`}>Status</InputLabel>
                             <Select
-                                labelId={`status-select-label-${id}`}
+                                labelId={`status-select-label-${animeId}`}
                                 value={newStatus}
                                 onChange={(e) => setNewStatus(e.target.value)}
                                 label="Status"
@@ -102,13 +124,13 @@ const AnimeListItem = ({ anime, onReviewClick, onEditClick, onDeleteClick }) => 
                 ) : (
                     <>
                         <Typography variant="body1" gutterBottom>
-                            {i18n.t("Status")}: {getStatusLabel(status)}
+                            {i18n.t("Status")}: {getStatusLabel(watchingStatus)}
                         </Typography>
                         <Typography variant="body1" gutterBottom>
-                            {i18n.t("Start Date")}: {startDate}
+                            {i18n.t("Start Date")}: {myStartDate}
                         </Typography>
                         <Typography variant="body1" gutterBottom>
-                            {i18n.t("End Date")}: {endDate || 'Not completed'}
+                            {i18n.t("End Date")}: {myFinishDate || 'Not completed'}
                         </Typography>
                         <Box sx={{ marginTop: 1 }}>
                             <Button variant="outlined" onClick={onReviewClick} sx={{ marginRight: 1 }}>
@@ -132,10 +154,10 @@ AnimeListItem.propTypes = {
     anime: PropTypes.shape({
         id: PropTypes.number.isRequired,
         title: PropTypes.string.isRequired,
-        status: PropTypes.number.isRequired,
-        startDate: PropTypes.string.isRequired,
-        endDate: PropTypes.string,
-        review: PropTypes.object,
+        watchingStatus: PropTypes.number.isRequired,
+        myStartDate: PropTypes.string.isRequired,
+        myFinishDate: PropTypes.string,
+        myTags: PropTypes.string,
         image: PropTypes.string.isRequired,
     }).isRequired,
     onReviewClick: PropTypes.func.isRequired,

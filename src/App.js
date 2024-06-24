@@ -7,22 +7,25 @@ import Signup from "./pages/Signup";
 import Anime from "./pages/Anime";
 import AnimeGallery from "./pages/AnimeGallery";
 import AnimeList from "./pages/AnimeList";
+import {AnimeListProvider} from "./contexts/AnimeContext";
 
 const App = () => {
     const theme = createTheme();
 
     return (
         <ThemeProvider theme={theme}>
+            <AnimeListProvider>
                 <Router>
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
-                        <Route path="/anime/:anime" element={<Anime />} />
+                        <Route path="/anime/:id" element={<Anime />} />
                         <Route path="/gallery/:page" element={<AnimeGallery />} />
                         <Route path="/list" element={<AnimeList />} />
                     </Routes>
                 </Router>
+            </AnimeListProvider>
         </ThemeProvider>
     );
 };

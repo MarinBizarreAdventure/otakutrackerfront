@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Typography, Pagination, Container, Grid, Button, Box } from '@mui/material';
 import AnimeGalleryCard from '../components/AnimeGalleryCard';
 import Header from '../components/Header';
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
+import axios from 'axios';
 
 const genres = [
     "Adventure", "Sci-Fi", "Mystery", "Sports", "Mecha", "Music", "Military", "Cars",
@@ -15,41 +16,38 @@ const genres = [
 
 const AnimeGallery = () => {
     const { page } = useParams();
-    const [animes, setAnimes] = useState([]);
+    const [animeIds, setAnimeIds] = useState([]);
     const [totalPages, setTotalPages] = useState(0);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const itemsPerPage = 10;
+    const itemsPerPage = 15;
     const { i18n } = useTranslation();
 
     useEffect(() => {
-        const fetchAnimes = async () => {
-            const dummyData = Array.from({ length: 100 }, (_, index) => ({
-                id: index + 1,
-                image: 'https://cdn.myanimelist.net/images/anime/10/24649.jpg',
-                title: `Anime Title ${index + 1}`,
-                rating: Math.floor(Math.random() * 5) + 1,
-                description: `Description for anime ${index + 1}. This is a brief description of the anime.`,
-                year: 2000 + (index % 20),
-            }));
-
-            setAnimes(dummyData);
-            setTotalPages(Math.ceil(dummyData.length / itemsPerPage));
+        const fetchAnimeIds = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(`http://localhost:5107/api/Gallery/${page}?pageSize=${itemsPerPage}`);
+                setAnimeIds(response.data);
+                setTotalPages(Math.ceil(100 / itemsPerPage));
+            } catch (error) {
+                console.error("Error fetching anime data:", error);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        fetchAnimes();
-    }, []);
+        fetchAnimeIds();
+    }, [page]);
 
     const handlePageChange = (event, value) => {
         navigate(`/gallery/${value}`);
     };
 
-    const startIndex = (page - 1) * itemsPerPage;
-    const selectedAnimes = animes.slice(startIndex, startIndex + itemsPerPage);
-
     return (
-        <Box sx={{ overflowY: 'hidden' }}>
+        <Box sx={{ overflowY: 'hidden', maxHeight: 'calc(100vh - 64px)' }}>
             <Header />
-            <Grid container >
+            <Grid container sx={{ maxWidth: 'lg', margin: 'auto'}}>
                 <Grid item xs={3} sx={{ padding: 2, borderRight: '1px solid #ccc' }}>
                     <Typography variant="h6" component="div" sx={{ marginBottom: 2 }}>
                         {i18n.t("Filter by Genre")}
@@ -80,16 +78,9 @@ const AnimeGallery = () => {
                                 sx={{ display: 'flex', justifyContent: 'center', marginTop: 3, marginBottom: 5 }}
                             />
                             <Grid container spacing={2}>
-                                {selectedAnimes.map(anime => (
-                                    <Grid item xs={12} key={anime.id}>
-                                        <AnimeGalleryCard
-                                            animeId={anime.id}
-                                            image={anime.image}
-                                            title={anime.title}
-                                            rating={anime.rating}
-                                            description={anime.description}
-                                            year={anime.year}
-                                        />
+                                {animeIds.map(id => (
+                                    <Grid item xs={12} key={id}>
+                                        <AnimeGalleryCard animeId={id} />
                                     </Grid>
                                 ))}
                             </Grid>

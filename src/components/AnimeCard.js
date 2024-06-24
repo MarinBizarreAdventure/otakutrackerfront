@@ -1,8 +1,11 @@
-import React, {useState, useTransition} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardMedia, CardContent, Typography, Rating, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
 import { styled } from '@mui/system';
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
+import axios from 'axios';
+import {useAuth} from "../contexts/AuthContext";
+import {useAnimeList} from "../contexts/AnimeContext";
 
 const StyledCard = styled(Card)(({ theme }) => ({
     margin: 5,
@@ -19,12 +22,28 @@ const StyledCard = styled(Card)(({ theme }) => ({
     cursor: 'pointer',
 }));
 
-const AnimeCard = ({ animeId, image, title, rating }) => {
+const AnimeCard = ({ animeId }) => {
+    const [anime, setAnime] = useState(null);
     const [open, setOpen] = useState(false);
     const [status, setStatus] = useState('');
     const [startDate, setStartDate] = useState('');
     const [finishDate, setFinishDate] = useState('');
     const { i18n } = useTranslation();
+    const { username } = useAuth();
+    const { animeList, fetchAnimeList, addAnimeToList, editAnimeInList, deleteAnimeFromList } = useAnimeList();
+
+    useEffect(() => {
+        const fetchAnimeDetails = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5107/api/Gallery/anime/${animeId}`);
+                setAnime(response.data);
+            } catch (error) {
+                console.error('Error fetching anime details:', error);
+            }
+        };
+
+        fetchAnimeDetails();
+    }, [animeId]);
 
     const handleOpen = () => {
         setOpen(true);
@@ -34,35 +53,52 @@ const AnimeCard = ({ animeId, image, title, rating }) => {
         setOpen(false);
     };
 
+
     const handleAdd = () => {
-        // TODO
-        // Logic here
-        console.log('Adding anime to favorites:', animeId);
-        console.log('Status:', status);
-        console.log('Start Date:', startDate);
-        console.log('Finish Date:', finishDate);
+        const data = {
+            username: username,
+            animeId: animeId,
+            score: 4,
+            watchingStatus: status,
+            watchedEpisodes: 0,
+            myStartDate: startDate,
+            myFinishDate: finishDate,
+            myRewatching: 0,
+            myRewatchingEp: 0,
+            myLastUpdated: new Date().toISOString(),
+            myTags: "string"
+        };
+        addAnimeToList(data);
+
         handleClose();
     };
 
+    if (!anime) return null;
+
     return (
-        <Box sx={{ position: 'relative', marginBottom: 3 }}>
+        <Box sx={{ position: 'relative', marginBottom: 3, maxWidth: '200px' }}>
             <StyledCard>
-                <Link to={`/anime/${animeId}`} style={{ textDecoration: 'none', height: 'calc(100% - 40px)', display: 'block' }}>
-                <Box sx={{ position: 'relative', flexGrow: 1 }}>
-                    <CardMedia
-                        sx={{ aspectRatio: '2/3' }}
-                        component="img"
-                        height="100%"
-                        image={image}
-                        alt={title}
-                    />
-                </Box>
-                <CardContent sx={{ paddingBottom: '1rem' }}>
-                    <Typography variant="h7" component="div" sx={{ minHeight: '3rem' }}>
-                        {title}
-                    </Typography>
-                    <Rating value={rating} readOnly sx={{ marginTop: 1, fontSize: '0.875rem' }}/>
-                </CardContent>
+                <Link to={`/anime/${anime.animeId}`} style={{ textDecoration: 'none', height: 'calc(100% - 40px)', display: 'block' }}>
+                    <Box sx={{ position: 'relative', flexGrow: 1 }}>
+                        <CardMedia
+                            sx={{
+                                aspectRatio: '2/3',
+                                width: '100%',
+                                objectFit: 'cover',
+                                objectPosition: 'top',
+                            }}
+                            component="img"
+                            height="100%"
+                            image={anime.imageUrl}
+                            alt={anime.name}
+                        />
+                    </Box>
+                    <CardContent sx={{ paddingBottom: '1rem' }}>
+                        <Typography variant="h7" component="div" sx={{ minHeight: '3rem' }}>
+                            {anime.name}
+                        </Typography>
+                        <Rating value={anime.rating / 6} readOnly sx={{ marginTop: 1, fontSize: '0.875rem' }}/>
+                    </CardContent>
                 </Link>
                 <Button onClick={handleOpen} fullWidth sx={{ borderRadius: '0', backgroundColor: '#3f51b5', color: '#fff' }}>
                     {i18n.t("Add")}
@@ -76,7 +112,7 @@ const AnimeCard = ({ animeId, image, title, rating }) => {
                         label="Anime ID"
                         type="text"
                         fullWidth
-                        value={animeId}
+                        value={anime.animeId}
                         InputProps={{
                             readOnly: true,
                         }}

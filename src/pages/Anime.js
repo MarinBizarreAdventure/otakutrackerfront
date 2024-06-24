@@ -1,84 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
 import { Grid, Typography, Paper, Link, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
 import Header from "../components/Header";
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
+import {useAnimeList} from "../contexts/AnimeContext";
+import {useAuth} from "../contexts/AuthContext";
 
-const Anime = ({ anime }) => {
-    const {
-        title,
-        synonyms,
-        type,
-        episodes,
-        status,
-        aired,
-        premiered,
-        broadcast,
-        producers,
-        licensors,
-        studios,
-        source,
-        genres,
-        demographic,
-        duration,
-        rating,
-        score,
-        popularity,
-        members,
-        favorites,
-        officialSite,
-        resources,
-        streamingPlatforms,
-        synopsis,
-        background,
-        coverImage,
-    } = {
-        title: 'One Piece',
-        synonyms: ['OP'],
-        type: 'TV',
-        episodes: 'Unknown',
-        status: 'Currently Airing',
-        aired: 'Oct 20, 1999 to ?',
-        premiered: 'Fall 1999',
-        broadcast: 'Sundays at 09:30 (JST)',
-        producers: ['Fuji TV', 'TAP', 'Shueisha'],
-        licensors: ['Funimation', '4Kids Entertainment'],
-        studios: ['Toei Animation'],
-        source: 'Manga',
-        genres: ['Action', 'Adventure', 'Fantasy'],
-        demographic: 'Shounen',
-        duration: '24 min.',
-        rating: 'PG-13 - Teens 13 or older',
-        score: 8.721,
-        popularity: 19,
-        members: 2376631,
-        favorites: 222911,
-        officialSite: 'https://myanimelist.net/anime/21/One_Piece',
-        resources: [
-            { name: 'AniDB', url: 'https://anidb.net/anime/21' },
-            { name: 'ANN', url: 'https://www.animenewsnetwork.com/encyclopedia/anime.php?id=21' },
-        ],
-        streamingPlatforms: [
-            { name: 'Crunchyroll', url: 'https://www.crunchyroll.com/one-piece' },
-            { name: 'Funimation', url: 'https://www.funimation.com/shows/one-piece/' },
-        ],
-        synopsis: `Barely surviving in a barrel after passing through a terrible whirlpool at sea, carefree Monkey D. Luffy ends up aboard a ship under attack by fearsome pirates. Despite being a naive-looking teenager, he is not to be underestimated. Unmatched in battle, Luffy is a pirate himself who resolutely pursues the coveted One Piece treasure and the King of the Pirates title that comes with it.
-
-The late King of the Pirates, Gol D. Roger, stirred up the world before his death by disclosing the whereabouts of his hoard of riches and daring everyone to obtain it. Ever since then, countless powerful pirates have sailed dangerous seas for the prized One Piece only to never return. Although Luffy lacks a crew and a proper ship, he is endowed with a superhuman ability and an unbreakable spirit that make him not only a formidable adversary but also an inspiration to many.
-
-As he faces numerous challenges with a big smile on his face, Luffy gathers one-of-a-kind companions to join him in his ambitious endeavor, together embracing perils and wonders on their once-in-a-lifetime adventure.`,
-        background: `Several anime-original arcs have been adapted into light novels, and the series has inspired 50+ video games as of 2023.
-
-In June 2004, One Piece was licensed in North America by 4Kids Entertainment, which partnered with Viz Media for home video distribution. As One Piece proved unsuitable for their target demographic, 4Kids Entertainment censored the show to meet their standards, and, in December 2006, they stopped its production. In April 2007, Funimation took over the series licensing, providing an uncut version that remained faithful to the original release.
-
-In Japan, the anime's first 574 episodes were released exclusively on DVD by Avex Pictures from February 21, 2001, to December 4, 2013. Blu-rays also became available with the DVDs starting on January 8, 2014. In North America, Viz Media released the anime on DVD between February 28, 2006, and June 26, 2007. Funimation has re-released and continued the series since May 27, 2008. From March 23, 2021, the DVDs were accompanied by Blu-rays as well.`,
-        coverImage: 'https://cdn.myanimelist.net/images/anime/11/73923.jpg',
-    };
-
+const Anime = () => {
+    const { id } = useParams();
+    const [anime, setAnime] = useState(null);
     const [open, setOpen] = useState(false);
     const [addStatus, setAddStatus] = useState('');
     const [startDate, setStartDate] = useState('');
     const [finishDate, setFinishDate] = useState('');
     const { i18n } = useTranslation();
+    const { animeList, fetchAnimeList, addAnimeToList, editAnimeInList, deleteAnimeFromList } = useAnimeList();
+    const { username } = useAuth();
+
+    useEffect(() => {
+        const fetchAnime = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5107/api/Anime/${id}`);
+                setAnime(response.data);
+            } catch (error) {
+                console.error("Error fetching anime data:", error);
+            }
+        };
+
+        fetchAnime();
+    }, [id]);
 
     const handleOpenDialog = () => {
         setOpen(true);
@@ -89,13 +40,57 @@ In Japan, the anime's first 574 episodes were released exclusively on DVD by Ave
     };
 
     const handleAddToFavorites = () => {
-        // TODO: Implement logic to add anime to favorites
-        console.log('Adding anime to favorites:', title);
-        console.log('Status:', addStatus);
-        console.log('Start Date:', startDate);
-        console.log('Finish Date:', finishDate);
+
+        const handleAdd = () => {
+            const data = {
+                username: username,
+                animeId: animeId,
+                score: 4,
+                watchingStatus: addStatus,
+                watchedEpisodes: 0,
+                myStartDate: startDate,
+                myFinishDate: finishDate,
+                myRewatching: 0,
+                myRewatchingEp: 0,
+                myLastUpdated: new Date().toISOString(),
+                myTags: "string"
+            };
+            addAnimeToList(data);
+        };
         handleCloseDialog();
     };
+
+    if (!anime) {
+        return <div>Loading...</div>;
+    }
+
+    const {
+        animeId,
+        name,
+        englishName,
+        japaneseName,
+        imageUrl,
+        type,
+        episodes,
+        aired,
+        premiered,
+        producers,
+        licensors,
+        studios,
+        source,
+        duration,
+        synopsis,
+        rating,
+        ranked,
+        popularity,
+        members,
+        favorites,
+        watching,
+        completed,
+        onHold,
+        dropped,
+        planToWatch,
+    } = anime;
 
     return (
         <div>
@@ -104,9 +99,9 @@ In Japan, the anime's first 574 episodes were released exclusively on DVD by Ave
                 <Paper elevation={3} className="w-full max-w-5xl p-6 rounded-md bg-white">
                     <Grid container spacing={4}>
                         <Grid item xs={12} md={4}>
-                            <img src={coverImage} alt={title} className="rounded-lg w-full h-auto mb-4" />
+                            <img src={imageUrl} alt={name} className="rounded-lg w-full h-auto mb-4" />
                             <Typography variant="h4" align="center" gutterBottom>
-                                {title}
+                                {name}
                             </Typography>
                             <Button
                                 onClick={handleOpenDialog}
@@ -118,7 +113,10 @@ In Japan, the anime's first 574 episodes were released exclusively on DVD by Ave
                                 {i18n.t("Add to Favorites")}
                             </Button>
                             <Typography variant="body1" paragraph>
-                                <strong>{i18n.t("Alternative Titles")}:</strong> {synonyms.join(', ')}
+                                <strong>{i18n.t("English Title")}:</strong> {englishName}
+                            </Typography>
+                            <Typography variant="body1" paragraph>
+                                <strong>{i18n.t("Japanese Title")}:</strong> {japaneseName}
                             </Typography>
                             <Typography variant="body1" paragraph>
                                 <strong>{i18n.t("Type")}:</strong> {type}
@@ -127,34 +125,22 @@ In Japan, the anime's first 574 episodes were released exclusively on DVD by Ave
                                 <strong>{i18n.t("Episodes")}:</strong> {episodes}
                             </Typography>
                             <Typography variant="body1" paragraph>
-                                <strong>{i18n.t("Status")}:</strong> {status}
-                            </Typography>
-                            <Typography variant="body1" paragraph>
                                 <strong>{i18n.t("Aired")}:</strong> {aired}
                             </Typography>
                             <Typography variant="body1" paragraph>
                                 <strong>{i18n.t("Premiered")}:</strong> {premiered}
                             </Typography>
                             <Typography variant="body1" paragraph>
-                                <strong>{i18n.t("Broadcast")}:</strong> {broadcast}
+                                <strong>{i18n.t("Producers")}:</strong> {producers}
                             </Typography>
                             <Typography variant="body1" paragraph>
-                                <strong>{i18n.t("Producers")}:</strong> {producers.join(', ')}
+                                <strong>{i18n.t("Licensors")}:</strong> {licensors}
                             </Typography>
                             <Typography variant="body1" paragraph>
-                                <strong>{i18n.t("Licensors")}:</strong> {licensors.join(', ')}
-                            </Typography>
-                            <Typography variant="body1" paragraph>
-                                <strong>{i18n.t("Studios")}:</strong> {studios.join(', ')}
+                                <strong>{i18n.t("Studios")}:</strong> {studios}
                             </Typography>
                             <Typography variant="body1" paragraph>
                                 <strong>{i18n.t("Source")}:</strong> {source}
-                            </Typography>
-                            <Typography variant="body1" paragraph>
-                                <strong>{i18n.t("Genres")}:</strong> {genres.join(', ')}
-                            </Typography>
-                            <Typography variant="body1" paragraph>
-                                <strong>{i18n.t("Demographic")}:</strong> {demographic}
                             </Typography>
                             <Typography variant="body1" paragraph>
                                 <strong>{i18n.t("Duration")}:</strong> {duration}
@@ -174,38 +160,67 @@ In Japan, the anime's first 574 episodes were released exclusively on DVD by Ave
                             </Typography>
 
                             <Typography variant="h6" gutterBottom>
-                                {i18n.t("Background")}
+                                {i18n.t("Ranked")}:
                             </Typography>
                             <Typography variant="body1" paragraph>
-                                {background}
+                                {ranked}
                             </Typography>
 
                             <Typography variant="h6" gutterBottom>
-                                {i18n.t("Available At")}
+                                {i18n.t("Popularity")}:
                             </Typography>
-                            <Link href={officialSite} target="_blank" rel="noopener">
-                                {i18n.t("Official Site")}
-                            </Link>
+                            <Typography variant="body1" paragraph>
+                                {popularity}
+                            </Typography>
 
                             <Typography variant="h6" gutterBottom>
-                                {i18n.t("Resources")}
+                                {i18n.t("Members")}:
                             </Typography>
-                            {resources.map((resource, index) => (
-                                <Link key={index} href={resource.url} target="_blank" rel="noopener">
-                                    {resource.name}
-                                </Link>
-                            ))}
+                            <Typography variant="body1" paragraph>
+                                {members}
+                            </Typography>
 
                             <Typography variant="h6" gutterBottom>
-                                {i18n.t("Streaming Platforms")}
+                                {i18n.t("Favorites")}:
                             </Typography>
-                            {streamingPlatforms.map((platform, index) => (
-                                <Typography key={index} variant="body1" paragraph>
-                                    <Link href={platform.url} target="_blank" rel="noopener">
-                                        {platform.name}
-                                    </Link>
-                                </Typography>
-                            ))}
+                            <Typography variant="body1" paragraph>
+                                {favorites}
+                            </Typography>
+
+                            <Typography variant="h6" gutterBottom>
+                                {i18n.t("Watching")}:
+                            </Typography>
+                            <Typography variant="body1" paragraph>
+                                {watching}
+                            </Typography>
+
+                            <Typography variant="h6" gutterBottom>
+                                {i18n.t("Completed")}:
+                            </Typography>
+                            <Typography variant="body1" paragraph>
+                                {completed}
+                            </Typography>
+
+                            <Typography variant="h6" gutterBottom>
+                                {i18n.t("On Hold")}:
+                            </Typography>
+                            <Typography variant="body1" paragraph>
+                                {onHold}
+                            </Typography>
+
+                            <Typography variant="h6" gutterBottom>
+                                {i18n.t("Dropped")}:
+                            </Typography>
+                            <Typography variant="body1" paragraph>
+                                {dropped}
+                            </Typography>
+
+                            <Typography variant="h6" gutterBottom>
+                                {i18n.t("Plan to Watch")}:
+                            </Typography>
+                            <Typography variant="body1" paragraph>
+                                {planToWatch}
+                            </Typography>
                         </Grid>
                     </Grid>
 

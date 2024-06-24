@@ -4,7 +4,7 @@ import validator from 'validator';
 import {useTranslation} from "react-i18next";
 
 const LoginForm = ({ handleLogin }) => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
@@ -12,13 +12,7 @@ const LoginForm = ({ handleLogin }) => {
 
     const validateForm = () => {
         let valid = true;
-        if (!validator.isEmail(email)) {
-            setEmailError(i18n.t("PleaseEnterValidEmail"));
-            valid = false;
-        } else {
-            setEmailError('');
-        }
-        if (password.length < 6) {
+        if (password.length < 3) {
             setPasswordError(i18n.t("PassMustBe6+Long"));
             valid = false;
         } else {
@@ -30,13 +24,12 @@ const LoginForm = ({ handleLogin }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (validateForm()) {
-            handleLogin({ email, password });
+            handleLogin({ username, password });
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <Paper elevation={3} className="w-full max-w-md p-8 rounded-md bg-gray-900 text-white">
+            <Paper elevation={3} className="p-8 rounded-md bg-gray-900 text-white">
                 <Typography variant="h5" align="center" gutterBottom>
                     {i18n.t("Login")}
                 </Typography>
@@ -46,10 +39,10 @@ const LoginForm = ({ handleLogin }) => {
                             <TextField
                                 variant="outlined"
                                 fullWidth
-                                label="Email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                label="Username"
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 error={!!emailError}
                                 helperText={emailError}
                                 required
@@ -90,7 +83,6 @@ const LoginForm = ({ handleLogin }) => {
                     </Grid>
                 </form>
             </Paper>
-        </div>
     );
 };
 

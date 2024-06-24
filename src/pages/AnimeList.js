@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, CircularProgress } from '@mui/material';
 import AnimeListItem from '../components/AnimeListItem';
 import Header from "../components/Header";
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
+import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
+import {useAnimeList} from "../contexts/AnimeContext";
 
 const statuses = [
     { id: 1, label: 'Currently Watching' },
@@ -13,16 +16,12 @@ const statuses = [
 ];
 
 const AnimeListPage = () => {
-    const [animes, setAnimes] = useState([
-        { id: 1, title: 'Anime Title 1', status: 1, startDate: '2023-01-01', endDate: '2023-02-15', review: null, image: 'https://cdn.myanimelist.net/images/anime/10/24649.jpg' },
-        { id: 2, title: 'Anime Title 2', status: 2, startDate: '2022-11-15', endDate: '2023-01-05', review: { stars: 8, comment: 'Great anime!' }, image: 'https://cdn.myanimelist.net/images/anime/10/24649.jpg' },
-        { id: 3, title: 'Anime Title 3', status: 4, startDate: '2023-03-10', endDate: null, review: null, image: 'https://cdn.myanimelist.net/images/anime/10/24649.jpg' },
-    ]);
-
+    const { animeList, fetchAnimeList, addAnimeToList, editAnimeInList, deleteAnimeFromList } = useAnimeList();
     const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
     const [selectedAnime, setSelectedAnime] = useState(null);
     const [stars, setStars] = useState(5); // Default stars rating
     const [reviewComment, setReviewComment] = useState('');
+    const [loading, setLoading] = useState(false);
     const { i18n } = useTranslation();
 
     const openReviewDialog = (anime) => {
@@ -33,32 +32,36 @@ const AnimeListPage = () => {
     const closeReviewDialog = () => {
         setReviewDialogOpen(false);
         setSelectedAnime(null);
-        setStars(5); // Reset stars rating
-        setReviewComment(''); // Reset review comment
+        setStars(5);
+        setReviewComment('');
     };
 
     const handleReviewSubmit = () => {
-        // Logic to submit review (you can implement this based on your backend integration or local state management)
         console.log(`Submitting review for ${selectedAnime.title}: Stars - ${stars}, Comment - ${reviewComment}`);
-        // Close the dialog
         closeReviewDialog();
     };
 
     return (
         <div>
             <Header />
-            <Box sx={{ padding: 4 }}>
+            <Box sx={{ padding: 4, maxWidth: 'lg', margin: 'auto' }}>
                 <Typography variant="h4" gutterBottom>
                     {i18n.t("Anime List")}
                 </Typography>
-                {animes.map(anime => (
-                    <AnimeListItem
-                        key={anime.id}
-                        anime={anime}
-                        statuses={statuses}
-                        onReviewClick={() => openReviewDialog(anime)}
-                    />
-                ))}
+                {loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    animeList.map(anime => (
+                        <AnimeListItem
+                            key={anime.animeId}
+                            anime={anime}
+                            statuses={statuses}
+                            onReviewClick={() => openReviewDialog(anime)}
+                        />
+                    ))
+                )}
                 <Dialog open={reviewDialogOpen} onClose={closeReviewDialog}>
                     <DialogTitle>{i18n.t("Leave a Review")}</DialogTitle>
                     <DialogContent>

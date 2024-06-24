@@ -3,15 +3,15 @@ import { Box, Typography } from '@mui/material';
 import AnimeCard from './AnimeCard';
 import './AnimeList.css';
 
-const AnimeList = ({ title, animes }) => {
+const AnimeList = ({ title, animeIds }) => {
     return (
         <Box sx={{ margin: 4 }}>
             <Typography variant="h4" gutterBottom>
                 {title}
             </Typography>
             <div className="anime-list-container">
-                {animes.map((anime, index) => (
-                    <AnimeCard key={index} animeId={anime.animeId} image={anime.image} title={anime.title} rating={anime.rating} />
+                {animeIds.map((animeId, index) => (
+                    <AnimeCard key={index} animeId={animeId} />
                 ))}
             </div>
         </Box>
